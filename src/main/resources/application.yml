@@ -1,0 +1,5 @@
+spring:
+  datasource:
+    url: jdbc:postgresql://localhost:5430/adoptify
+    username: postgres
+    password: postgres
