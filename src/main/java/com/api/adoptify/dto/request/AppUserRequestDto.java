@@ -1,4 +1,4 @@
-package com.api.adoptify.dto;
+package com.api.adoptify.dto.request;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -9,10 +9,8 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class UserDto {
-    private Long id;
+public class AppUserRequestDto {
     private String userName;
     private String email;
     private String password;
-
 }
