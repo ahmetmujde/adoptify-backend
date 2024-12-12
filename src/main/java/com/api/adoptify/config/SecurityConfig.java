@@ -31,14 +31,17 @@ public class SecurityConfig {
                         .requestMatchers("/").permitAll()
                         .requestMatchers("/register").permitAll()
                         .requestMatchers("/login").permitAll()
+                        .requestMatchers("/session/create").permitAll()
+                        .requestMatchers("/session/get").permitAll()
+                        .requestMatchers("/session/invalidate").permitAll()
                         .anyRequest().hasAnyRole("USER", "ADMIN")
                 )
                 .logout(logout -> logout
                         .logoutUrl("/logout") // Logout endpoint'i
                         .logoutSuccessUrl("/") // Logout sonrası yönlendirme
                         .invalidateHttpSession(true) // Oturumu geçersiz kıl
-                        .deleteCookies("JSESSIONID"))
-
+                        .deleteCookies("JSESSIONID")
+                )
                 .sessionManagement(session -> session
                         .sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED) // Created When needed session
                         .maximumSessions(1) // At the same time there is one session created
