@@ -13,5 +13,10 @@ public class AppUserResponseDto {
     private Long id;
     private String userName;
     private String email;
-    private String password;
+    private String phoneNumber;
+    private Boolean criminalRecord;
+    private String gender;
+    private String addressArea;
+    private String addressCity;
+    private String addressState;
 }

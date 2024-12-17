@@ -12,6 +12,7 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.web.cors.CorsConfiguration;
 
 @Configuration
 @EnableWebSecurity
@@ -26,11 +27,22 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         return http
+                .cors(cors -> cors.configurationSource(request -> {
+                    CorsConfiguration config = new CorsConfiguration();
+                    config.addAllowedOrigin("http://localhost:3000"); // Frontend URL'si
+                    config.addAllowedMethod("*"); // Tüm HTTP yöntemlerini izin ver
+                    config.addAllowedHeader("*"); // Tüm header'ları izin ver
+                    config.setAllowCredentials(true); // Çerezleri izin ver
+                    return config;
+                }))
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests( auth -> auth
                         .requestMatchers("/").permitAll()
                         .requestMatchers("/register").permitAll()
                         .requestMatchers("/login").permitAll()
+                        .requestMatchers("/cities").permitAll()
+                        .requestMatchers("/districts").permitAll()
+                        .requestMatchers("/logout").permitAll()
                         .requestMatchers("/session/create").permitAll()
                         .requestMatchers("/session/get").permitAll()
                         .requestMatchers("/session/invalidate").permitAll()

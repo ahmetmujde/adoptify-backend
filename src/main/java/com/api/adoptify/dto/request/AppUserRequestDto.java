@@ -13,4 +13,8 @@ public class AppUserRequestDto {
     private String userName;
     private String email;
     private String password;
+    private String phoneNumber;
+    private Boolean criminalRecord;
+    private Long genderId;
+    private AddressRequestDto address;
 }
