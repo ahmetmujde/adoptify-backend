@@ -12,6 +12,7 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.util.*;
@@ -176,4 +177,116 @@ public class AppUserServiceTest {
         // Assert
         assertNull(result);
     }
+    @Test
+    void shouldFailWhenPasswordEncodingIsIncorrect() {
+        // Arrange
+        AppUserRequestDto requestDto = new AppUserRequestDto();
+        requestDto.setEmail("hikmet@gmail.com");
+        requestDto.setPassword("hikmet123");
+        requestDto.setGenderId(1L);
+
+        AddressRequestDto address = new AddressRequestDto();
+        address.setCityId(1L);
+        address.setDistrictId(1L);
+        requestDto.setAddress(address);
+
+        Gender gender = new Gender();
+        gender.setId(1L);
+        City city = new City();
+        city.setId(1L);
+        District district = new District();
+        district.setId(1L);
+        Role userRole = new Role();
+        userRole.setName("User");
+
+        when(appUserRepository.existsByEmail("hikmet@gmail.com")).thenReturn(false);
+        when(genderRepository.findById(1L)).thenReturn(Optional.of(gender));
+        when(cityRepository.findById(1L)).thenReturn(Optional.of(city));
+        when(districtRepository.findById(1L)).thenReturn(Optional.of(district));
+        when(roleRepository.findByName("User")).thenReturn(Optional.of(userRole));
+        when(passwordEncoder.encode("hikmet123")).thenReturn("incorrectPassword"); // An incorrect value was returned
+
+        // Act
+        AppUserResponseDto responseDto = appUserService.createUser(requestDto);
+
+        // Assert
+        assertNotEquals("incorrectPassword", responseDto.getEmail()); // The test will fail because the password do not match
+    }
+    @Test
+    void shouldFailWhenRoleNotFound() {
+        // Arrange
+        AppUserRequestDto requestDto = new AppUserRequestDto();
+        requestDto.setEmail("hikmet@gmail.com");
+        requestDto.setPassword("hikmet123");
+        requestDto.setGenderId(1L);
+
+        AddressRequestDto address = new AddressRequestDto();
+        address.setCityId(1L);
+        address.setDistrictId(1L);
+        requestDto.setAddress(address);
+
+        Gender gender = new Gender();
+        gender.setId(1L);
+        City city = new City();
+        city.setId(1L);
+        District district = new District();
+        district.setId(1L);
+
+        when(appUserRepository.existsByEmail("hikmet@gmail.com")).thenReturn(false);
+        when(genderRepository.findById(1L)).thenReturn(Optional.of(gender));
+        when(cityRepository.findById(1L)).thenReturn(Optional.of(city));
+        when(districtRepository.findById(1L)).thenReturn(Optional.of(district));
+        when(roleRepository.findByName("User")).thenReturn(Optional.empty()); // Role is not found
+
+        // Act & Assert
+        assertThrows(RuntimeException.class, () -> appUserService.createUser(requestDto)); // The test will fail
+    }
+    @Test
+    void shouldFailWhenCityIdIsInvalid() {
+        // Arrange
+        AppUserRequestDto requestDto = new AppUserRequestDto();
+        requestDto.setEmail("hikmet@gmail.com");
+        requestDto.setPassword("hikmet123");
+        requestDto.setGenderId(1L);
+
+        AddressRequestDto address = new AddressRequestDto();
+        address.setCityId(999L); // Invalid ID
+        address.setDistrictId(1L);
+        requestDto.setAddress(address);
+
+        Gender gender = new Gender();
+        gender.setId(1L);
+
+        when(appUserRepository.existsByEmail("hikmet@gmail.com")).thenReturn(false);
+        when(genderRepository.findById(1L)).thenReturn(Optional.of(gender));
+        when(cityRepository.findById(999L)).thenReturn(Optional.empty()); // City is not found
+
+        // Act & Assert
+        assertThrows(RuntimeException.class, () -> appUserService.createUser(requestDto)); // The test will fail
+    }
+    @Test
+    void shouldFailWhenAppUserNameNotFound() {
+        // Arrange
+        String email = "hikmet@gmail.com";
+
+        when(appUserRepository.findByEmail(email)).thenReturn(Optional.empty());
+
+        // Act
+        String appUserName = appUserService.getAppUserNameByUserEmail(email);
+
+        // Assert
+        assertNotNull(appUserName); // The test will fail because the username is null
+    }
+    @Test
+    void shouldFailWhenUserListIsEmpty() {
+        // Arrange
+        when(appUserRepository.findAll()).thenReturn(Collections.emptyList()); // An empty list is returned
+
+        // Act
+        List<AppUserResponseDto> responseDtos = appUserService.getUsers();
+
+        // Assert
+        assertFalse(responseDtos.isEmpty()); // The test will fail because the list is empty
+    }
 }
+
