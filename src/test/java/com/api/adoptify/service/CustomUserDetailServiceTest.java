@@ -137,4 +137,63 @@ class CustomUserDetailServiceTest {
         assertThrows(UsernameNotFoundException.class, () ->
                 customUserDetailService.loadUserByUsername(""));
     }
+    @Test
+    void shouldHandleRolesWithNullName() {
+        // Given AppUser
+        AppUser appUser = new AppUser();
+        appUser.setEmail("hikmet@gmail.com");
+        appUser.setPassword("hikmet123");
+
+        // Given Role with null name
+        Role role = new Role();
+        role.setName(null);
+        appUser.setRoles(Collections.singletonList(role));
+
+        when(appUserRepository.findByEmail("hikmet@gmail.com")).thenReturn(Optional.of(appUser));
+
+        // When
+        UserDetails userDetails = customUserDetailService.loadUserByUsername("hikmet@gmail.com");
+
+        // Then
+        assertEquals("hikmet@gmail.com", userDetails.getUsername());
+        assertEquals("hikmet123", userDetails.getPassword());
+        assertTrue(userDetails.getAuthorities().isEmpty()); // Null rol varsa, yetki olmamalı
+    }
+    @Test
+    void shouldFailWhenRoleIsCompletelyNull() {
+        // Given AppUser with a null role
+        AppUser appUser = new AppUser();
+        appUser.setEmail("hikmet@gmail.com");
+        appUser.setPassword("hikmet123");
+        appUser.setRoles(Collections.singletonList(null)); // Null role added
+
+        when(appUserRepository.findByEmail("hikmet@gmail.com")).thenReturn(Optional.of(appUser));
+
+        // When
+        UserDetails userDetails = customUserDetailService.loadUserByUsername("hikmet@gmail.com");
+
+        // Then
+        // Expected to fail because authorities should be empty when role is null
+        assertFalse(userDetails.getAuthorities().isEmpty()); // Test fails here
+    }
+    @Test
+    void shouldFailWhenRoleNameIsEmptyString() {
+        // Given AppUser with an empty role name
+        AppUser appUser = new AppUser();
+        appUser.setEmail("hikmet@gmail.com");
+        appUser.setPassword("hikmet123");
+
+        Role role = new Role();
+        role.setName(""); // Empty name
+        appUser.setRoles(Collections.singletonList(role));
+
+        when(appUserRepository.findByEmail("hikmet@gmail.com")).thenReturn(Optional.of(appUser));
+
+        // When
+        UserDetails userDetails = customUserDetailService.loadUserByUsername("hikmet@gmail.com");
+
+        // Then
+        // Expected to fail because authorities should not include empty role names
+        assertFalse(userDetails.getAuthorities().isEmpty()); // Test fails here
+    }
 }
